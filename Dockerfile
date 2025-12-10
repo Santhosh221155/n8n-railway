@@ -1,10 +1,21 @@
-FROM n8nio/n8n:1.45.1
-ENV N8N_RELEASE_TYPE=docker
-# Render sets $PORT automatically
-ENV N8N_PORT=5678
-ENV N8N_HOST=0.0.0.0
-# Ensure config directory exists
-RUN mkdir -p /home/node/.n8n
-# Expose n8n port
+FROM node:18-alpine
+# Install required packages
+RUN apk add --no-cache \
+    bash \
+    python3 \
+    make \
+    g++ \
+    tzdata
+# Create user and directories
+RUN addgroup -g 1000 nodejs && adduser -S -u 1000 -G nodejs node
+USER node
+WORKDIR /home/node
+# Install n8n globally
+RUN npm install -g n8n@1.45.1
+# Expose port
 EXPOSE 5678
-CMD ["n8n"]
+# Fix permission issues on Render/Railway
+ENV N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+ENV N8N_RELEASE_CHANNEL=stable
+# Start n8n
+CMD ["n8n", "start"]
