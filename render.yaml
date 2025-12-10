@@ -1,18 +1,52 @@
 services:
   - type: web
     name: n8n
-    env: docker
-    plan: free
-    region: oregon
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: DB_TYPE
-        value: postgresdb
-      - key: N8N_HOST
-        value: 0.0.0.0
       - key: N8N_PORT
         value: 5678
+      - key: N8N_HOST
+        value: 0.0.0.0
+      - key: GENERIC_TIMEZONE
+        value: Asia/Kolkata
       - key: WEBHOOK_URL
-        fromService:
-          name: n8n
-          type: web
-          property: url
+        sync: false
+      - key: N8N_ENCRYPTION_KEY
+        sync: false
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_BASIC_AUTH_USER
+        sync: false
+      - key: N8N_BASIC_AUTH_PASSWORD
+        sync: false
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        fromDatabase:
+          name: n8n-db
+          property: host
+      - key: DB_POSTGRESDB_PORT
+        fromDatabase:
+          name: n8n-db
+          property: port
+      - key: DB_POSTGRESDB_DATABASE
+        fromDatabase:
+          name: n8n-db
+          property: database
+      - key: DB_POSTGRESDB_USER
+        fromDatabase:
+          name: n8n-db
+          property: user
+      - key: DB_POSTGRESDB_PASSWORD
+        fromDatabase:
+          name: n8n-db
+          property: password
+    disk:
+      name: n8n-local-files
+      mountPath: /home/node/.n8n
+      sizeGB: 1
+
+databases:
+  - name: n8n-db
+    postgresMajorVersion: "15"
